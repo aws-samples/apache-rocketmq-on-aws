@@ -5,6 +5,16 @@ echo "Please enter the S3 region:"
 read S3Region
 echo "Please enter the prefix(make sure the end with character /, example: rocketmq/)"
 read QSS3KeyPrefix
+echo "Please enter the AvailabilityZones, separated by comma :(for example:cn-northwest-1a,cn-northwest-1b,cn-northwest-1c)"
+read AvailabilityZones
+echo "Please enter the NumberOfAZs(1/2/3/4):"
+read NumberOfAZs
+echo "please enter the ec2 keypair name"
+read KeyPairName
+echo "Please enter the BrokerClusterCount, 1 or 3"
+read BrokerClusterCount
+echo "Please enter the number of nameserver(1/2/3):"
+read NameServerClusterCount
 
 AWS_DEFAULT_REGION=${S3Region}
 
@@ -29,29 +39,5 @@ aws s3 cp ../submodules/quickstart-linux-bastion/scripts/banner_message.txt s3:/
 aws s3 cp ../submodules/quickstart-linux-bastion/scripts/bastion_bootstrap.sh s3://${S3Bucket}/${QSS3KeyPrefix}scripts/bastion_bootstrap.sh
 
 
-#aws cloudformation create-stack --stack-name rocketMQ --template-body ../templates/rocketmq-master.template --parameters "[{"ParameterKey":"AvailabilityZones","ParameterValue":"cn-north-1a,cn-north-1b"},{"ParameterKey":"BrokerClusterCount","ParameterValue":"1"},{"ParameterKey":"NumberOfAZs","ParameterValue":"3"},{"ParameterKey":"RemoteAccessCIDR","ParameterValue":"0.0.0.0/0"},{"ParameterKey":"VolumeSize","ParameterValue":"100"},{"ParameterKey":"QSS3BucketName","ParameterValue":"${S3Bucket}"},{"ParameterKey":"QSS3BucketRegion","ParameterValue":"${QSS3BucketRegion}"},{"ParameterKey":"QSS3KeyPrefix","ParameterValue":"${QSS3KeyPrefix}"},{"ParameterKey":"KeyPairName","ParameterValue":"rocket-testing"},{"ParameterKey":"NameServerInstanceType","ParameterValue":"m5.large"},{"ParameterKey":"BrokerNodeInstanceType","ParameterValue":"m5.xlarge"},{"ParameterKey":"NameServerClusterCount","ParameterValue":"1"}]" --capabilities CAPABILITY_NAMED_IAM
-
-aws cloudformation create-stack --stack-name rocketMQ --template-body file:////Users/minggu/code/solution-architecture/Aws-rocketMQ-HA-Deployment/templates/rocketmq-master.template --parameters "[{\"ParameterKey\":\"AvailabilityZones\",\"ParameterValue\":\"cn-north-1a,cn-north-1b\"},{\"ParameterKey\":\"BrokerClusterCount\",\"ParameterValue\":\"1\"},{\"ParameterKey\":\"NumberOfAZs\",\"ParameterValue\":\"2\"},{\"ParameterKey\":\"RemoteAccessCIDR\",\"ParameterValue\":\"0.0.0.0/0\"},{\"ParameterKey\":\"VolumeSize\",\"ParameterValue\":\"100\"},{\"ParameterKey\":\"QSS3BucketName\",\"ParameterValue\":\"${S3Bucket}\"},{\"ParameterKey\":\"QSS3BucketRegion\",\"ParameterValue\":\"${S3Region}\"},{\"ParameterKey\":\"QSS3KeyPrefix\",\"ParameterValue\":\"${QSS3KeyPrefix}\"},{\"ParameterKey\":\"KeyPairName\",\"ParameterValue\":\"rocket-testin-bjs\"},{\"ParameterKey\":\"NameServerInstanceType\",\"ParameterValue\":\"m5.large\"},{\"ParameterKey\":\"BrokerNodeInstanceType\",\"ParameterValue\":\"m5.xlarge\"},{\"ParameterKey\":\"NameServerClusterCount\",\"ParameterValue\":\"1\"}]" --capabilities CAPABILITY_NAMED_IAM
-
-exit 0
-#{"ParameterKey":"AvailabilityZones","ParameterValue":"cn-northwest-1a,cn-northwest-1b,cn-northwest-1c"},
-echo "Please enter the AvailabilityZones:(for example:cn-northwest-1a,cn-northwest-1b,cn-northwest-1c)"
-read AvailabilityZones
-#{"ParameterKey":"BrokerClusterCount","ParameterValue":"1"},
-echo "Please enter the BrokerClusterCount, 1 or 3"
-read BrokerClusterCount
-#{"ParameterKey":"NumberOfAZs","ParameterValue":"3"},
-echo "Please enter the NumberOfAZs(1/2/3/4):"
-read NumberOfAZs
-#{"ParameterKey":"RemoteAccessCIDR","ParameterValue":"0.0.0.0/0"},
-echo "Please enter the RemoteAccessCIDR(example:0.0.0.0/0):"
-read RemoteAccessCIDR
-#{"ParameterKey":"VolumeSize","ParameterValue":"100"},
-echo "Please enter the  "
-#{"ParameterKey":"QSS3BucketName","ParameterValue":"rocketmq-deploy-test-minggu"},
-#{"ParameterKey":"QSS3BucketRegion","ParameterValue":"cn-northwest-1"},
-#{"ParameterKey":"QSS3KeyPrefix","ParameterValue":"rocketmq-"},
-#{"ParameterKey":"KeyPairName","ParameterValue":"mongo-db"},
-#{"ParameterKey":"NameServerInstanceType","ParameterValue":"m5.large"},
-#{"ParameterKey":"BrokerNodeInstanceType","ParameterValue":"m5.2xlarge"},
-#{"ParameterKey":"NameServerClusterCount","ParameterValue":"1"}
+template_path=`pwd`
+aws cloudformation create-stack --stack-name rocketMQ --template-body file:///${template_path}/../templates/rocketmq-master.template --parameters "[{\"ParameterKey\":\"AvailabilityZones\",\"ParameterValue\":\"${AvailabilityZones}\"},{\"ParameterKey\":\"BrokerClusterCount\",\"ParameterValue\":\"${BrokerClusterCount}\"},{\"ParameterKey\":\"NumberOfAZs\",\"ParameterValue\":\"${NumberOfAZs}\"},{\"ParameterKey\":\"RemoteAccessCIDR\",\"ParameterValue\":\"0.0.0.0/0\"},{\"ParameterKey\":\"VolumeSize\",\"ParameterValue\":\"100\"},{\"ParameterKey\":\"QSS3BucketName\",\"ParameterValue\":\"${S3Bucket}\"},{\"ParameterKey\":\"QSS3BucketRegion\",\"ParameterValue\":\"${S3Region}\"},{\"ParameterKey\":\"QSS3KeyPrefix\",\"ParameterValue\":\"${QSS3KeyPrefix}\"},{\"ParameterKey\":\"KeyPairName\",\"ParameterValue\":\"${KeyPairName}\"},{\"ParameterKey\":\"NameServerInstanceType\",\"ParameterValue\":\"m5.large\"},{\"ParameterKey\":\"BrokerNodeInstanceType\",\"ParameterValue\":\"m5.xlarge\"},{\"ParameterKey\":\"NameServerClusterCount\",\"ParameterValue\":\"${NameServerClusterCount}\"}]" --capabilities CAPABILITY_NAMED_IAM
