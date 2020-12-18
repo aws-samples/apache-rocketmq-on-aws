@@ -1,0 +1,506 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template is used for setting up a single rocketmq nameserver node",
+    "Parameters": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC::Id",
+            "Description": "VPC-ID of your existing Virtual Private Cloud (VPC) where you want to deploy RocketMQ cluster."
+        },
+        "RocketMQNameServerSecurityGroupID": {
+            "Description": "ID of the RocketMQ Server Access Security Group (e.g., sg-7f16e910)",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "RocketMQNodeIAMProfileID": {
+            "Description": "ID of the RocketMQ IAM Profile",
+            "Type": "String"
+        },
+        "NodeSubnet": {
+            "Description": "Subnet Id",
+            "Type": "String"
+        },
+        "BrokerNodeInstanceType": {
+            "Description": "Amazon EC2 instance type for the RocketMQ Nameserver nodes.",
+            "Type": "String",
+            "Default": "m4.large",
+            "AllowedValues": [
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.12xlarge",
+                "m5.24xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.12xlarge",
+                "r5.16xlarge",
+                "r5.24xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5.18xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge"
+            ]
+        },
+        "ImageId": {
+            "Description": "AMI ID for Instance",
+            "Type": "AWS::EC2::Image::Id"
+        },
+        "ReplicaNodeNameTag": {
+            "Description": "Instance Name",
+            "Type": "String"
+        },
+        "NodeReplicaSetIndex": {
+            "Description": "Instance Index",
+            "Type": "String"
+        },
+        "StackName": {
+            "Description": "Name of the parent stack",
+            "Type": "String"
+        },
+        "VolumeSize": {
+            "Type": "String",
+            "Description": "EBS Volume Size (data) to be attached to node in GBs",
+            "Default": "400"
+        },
+        "VolumeType": {
+            "Type": "String",
+            "Description": "EBS Volume Type (data) to be attached to node in GBs [io1,gp2]",
+            "Default": "gp2",
+            "AllowedValues": [
+                "gp2",
+                "io1"
+            ]
+        },
+        "Iops": {
+            "Type": "String",
+            "Description": "Iops of EBS volume when io1 type is chosen. Otherwise ignored",
+            "Default": "100"
+        },
+        "KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Default": "home",
+            "Description": "Name of an existing EC2 KeyPair. RocketMQ instances will launch with this KeyPair."
+        },
+        "NameServerClusterCount": {
+            "Default": "2",
+            "Type": "String",
+            "Description": "Number of Apache RocketMQ NameServer nodes. Choose between 1-3",
+            "AllowedValues": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "BrokerClusterCount": {
+            "Description": "Number of Replica Set Members. Choose 1 or 3",
+            "Type": "String",
+            "Default": "3",
+            "AllowedValues": [
+                "1",
+                "3"
+            ]
+        },
+        "ReplicaNodeWaitForNodeInstallWaitHandle": {
+            "Description": "Pre-signed Wait Handle URL to send signal for associated wait condition",
+            "Type": "String"
+        },
+        "QSS3BucketName": {
+            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
+            "Default": "aws-cn-quickstart",
+            "Type": "String",
+            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+        },
+        "QSS3KeyPrefix": {
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "Default": "quickstart-rocketmq/",
+            "Type": "String",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with a hyphen (-)."
+        },
+        "QSS3BucketRegion": {
+            "Default": "cn-north-1",
+            "Description": "The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.",
+            "Type": "String"
+        }
+    },
+    "Conditions": {
+        "UsePIops": {
+            "Fn::Equals": [
+                {
+                    "Ref": "VolumeType"
+                },
+                "io1"
+            ]
+        },
+        "InstanceRecoverySupported": {
+            "Fn::And": [
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "BrokerNodeInstanceType"
+                                },
+                                "i3.large"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "BrokerNodeInstanceType"
+                                },
+                                "i3.xlarge"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "BrokerNodeInstanceType"
+                                },
+                                "i3.2xlarge"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "BrokerNodeInstanceType"
+                                },
+                                "i3.4xlarge"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "BrokerNodeInstanceType"
+                                },
+                                "i3.8xlarge"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "BrokerNodeInstanceType"
+                                },
+                                "i3.16xlarge"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "UsingDefaultBucket": {
+            "Fn::Equals": [
+            {
+                "Ref": "QSS3BucketName"
+            },
+            "aws-cn-quickstart"
+            ]
+        }
+    },
+    "Resources": {
+        "ReplicaNodeNetworkInterface": {
+            "Type": "AWS::EC2::NetworkInterface",
+            "Properties": {
+                "Description": "Network Interface for rocketmq Node",
+                "SubnetId": {
+                    "Ref": "NodeSubnet"
+                },
+                "GroupSet": [
+                    {
+                        "Ref": "RocketMQNameServerSecurityGroupID"
+                    }
+                ],
+                "SourceDestCheck": true,
+                "Tags": [
+                    {
+                        "Key": "Network",
+                        "Value": "Private"
+                    }
+                ]
+            }
+        },
+        "NameServerInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "NetworkInterfaces": [
+                    {
+                        "NetworkInterfaceId": {
+                            "Ref": "ReplicaNodeNetworkInterface"
+                        },
+                        "DeviceIndex": "0"
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "IamInstanceProfile": {
+                    "Ref": "RocketMQNodeIAMProfileID"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "ReplicaNodeNameTag"
+                        }
+                    },
+                    {
+                        "Key": "NameServerClusterCount",
+                        "Value": {
+                            "Ref": "NameServerClusterCount"
+                        }
+                    },
+                    {
+                        "Key": "NodeReplicaSetIndex",
+                        "Value": {
+                            "Ref": "NodeReplicaSetIndex"
+                        }
+                    }
+                ],
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": {
+                                "Ref": "VolumeSize"
+                            },
+                            "VolumeType": {
+                                "Ref": "VolumeType"
+                            },
+                            "Iops": {
+                                "Fn::If": [
+                                    "UsePIops",
+                                    {
+                                        "Ref": "Iops"
+                                    },
+                                    {
+                                        "Ref": "AWS::NoValue"
+                                    }
+                                ]
+                            },
+                            "DeleteOnTermination": true,
+                            "Encrypted" : true
+                        }
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash\n",
+                                "/opt/aws/bin/cfn-init -v --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource NameServerInstance ",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "mkdir -p /home/ec2-user/rocketmq-deploy \n",
+                                "cd /home/ec2-user/rocketmq-deploy \n",
+                                "aws s3 cp s3://",
+                                {
+                                    "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                { "Fn::Sub": "scripts/orchestrator.sh orchestrator.sh --region ${AWS::Region}\n"},
+                                "chmod +x orchestrator.sh \n",
+                                "aws s3 cp s3://",
+                                {
+                                    "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                { "Fn::Sub": "scripts/init_nameserver.sh init.sh --region ${AWS::Region}\n" },
+                                "aws s3 cp s3://",
+                                {
+                                    "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                { "Fn::Sub": "scripts/rocketmq-console-ng-1.0.0.jar rocketmq-console-ng-1.0.0.jar --region ${AWS::Region}\n" },
+                                "aws s3 cp s3://",
+                                {
+                                    "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                },
+                                "/",
+                                {
+                                    "Ref": "QSS3KeyPrefix"
+                                },
+                                { "Fn::Sub": "scripts/signalFinalStatus.sh signalFinalStatus.sh --region ${AWS::Region}\n" },
+                                "chmod +x signalFinalStatus.sh \n",
+                                "chmod +x init.sh \n",
+                                "#  Run the install \n",
+                                "#  Store stack name to tag DDB name\n",
+                                "echo ",
+                                {
+                                    "Fn::Join": [
+                                        "_",
+                                        [
+                                            "export TABLE_NAMETAG=",
+                                            {
+                                                "Ref": "StackName"
+                                            }
+                                        ]
+                                    ]
+                                },
+                                " >> config.sh\n",
+                                "echo ",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "export VPC=",
+                                            {
+                                                "Ref": "VPC"
+                                            }
+                                        ]
+                                    ]
+                                },
+                                " >> config.sh\n",
+                                "#  Store WaitHandler\n",
+                                "echo ",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "\"",
+                                            "export WAITHANDLER='",
+                                            {
+                                                "Ref": "ReplicaNodeWaitForNodeInstallWaitHandle"
+                                            },
+                                            "'",
+                                            "\""
+                                        ]
+                                    ]
+                                },
+                                " >> config.sh\n",
+                                "mkdir -p /rocketmq_auth \n",
+                                "./init.sh > install.log 2>&1 \n",
+                                "chown -R ec2-user:ec2-user /home/ec2-user/ \n",
+                                "/home/ec2-user/rocketmq-deploy/signalFinalStatus.sh 0\n",
+                                "#  Cleanup \n",
+                                "rm -rf init.sh\n",
+                                "rm -rf config.sh\n",
+                                "rm -rf orchestrator.sh\n",
+                                "rm -rf signalFinalStatus.sh\n"
+                            ]
+                        ]
+                    }
+                },
+                "InstanceType": {
+                    "Ref": "BrokerNodeInstanceType"
+                }
+            }
+        },
+        "NodeInstanceRecoveryAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Condition": "InstanceRecoverySupported",
+            "Properties": {
+                "AlarmDescription": "EC2 Autorecovery for Node Instance. Autorecover if we fail EC2 status checks for 5 minutes.",
+                "Namespace": "AWS/EC2",
+                "MetricName": "StatusCheckFailed_System",
+                "Statistic": "Minimum",
+                "Period": 60,
+                "EvaluationPeriods": 5,
+                "ComparisonOperator": "GreaterThanThreshold",
+                "Threshold": 0.0,
+                "AlarmActions": [
+                    {
+                        "Fn::Join": [
+                            "",
+                            [
+                                { "Fn::Sub": "arn:${AWS::Partition}:automate:" },
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                ":ec2:recover"
+                            ]
+                        ]
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "InstanceId",
+                        "Value": {
+                            "Ref": "NameServerInstance"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "NodePrivateIp": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "NameServerInstance",
+                    "PrivateIp"
+                ]
+            },
+            "Description": "Private IP Address of Node Instance"
+        },
+        "NodeInstanceID" : {
+            "Description": "The Instance ID",
+            "Value" : { "Ref": "NameServerInstance" }
+        },
+        "NodeNameTag": {
+            "Description": "Node Name Tag",
+            "Value" : { "Ref": "ReplicaNodeNameTag"}
+        }
+    }
+}

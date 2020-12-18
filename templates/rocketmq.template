@@ -1,0 +1,1182 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "(SO8006) - Deploy Apache RocketMQ Cluster on AWS (Existing VPC)",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Network Configuration"
+                    },
+                    "Parameters": [
+                        "VPC",
+                        "PrimaryNodeSubnet",
+                        "Secondary0NodeSubnet",
+                        "Secondary1NodeSubnet",
+                        "BastionSecurityGroupID"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Security Configuration"
+                    },
+                    "Parameters": [
+                        "KeyPairName"
+                    ]
+                },
+                {
+                   "Label": {
+                        "default": "AWS Quick Start Configuration"
+                    },
+                    "Parameters": [
+                        "QSS3BucketName",
+                        "QSS3KeyPrefix",
+                        "QSS3BucketRegion"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "BastionSecurityGroupID": {
+                    "default": "Bastion Security Group ID"
+                },
+                "NameServerClusterCount": {
+                    "default": "Apache RocketMQ NameServer Cluster Node Count"
+                },
+                "BrokerClusterCount": {
+                    "default": "Cluster Replica Set Count"
+                },
+                "Iops": {
+                    "default": "Iops"
+                },
+                "KeyPairName": {
+                    "default": "Key Pair Name"
+                },
+                "NameServerInstanceType": {
+                    "default": "Nameserver Instance Type"
+                },
+                "BrokerNodeInstanceType": {
+                    "default": "Broker Instance Type"
+                },
+                "FlushDiskType": {
+                    "default": "Apache RocketMQ flush Disk Type"
+                },
+                "PrimaryNodeSubnet": {
+                    "default": "Primary Node Subnet"
+                },
+                "QSS3BucketName": {
+                    "default": "Quick Start S3 Bucket Name"
+                },
+                "QSS3KeyPrefix": {
+                    "default": "Quick Start S3 Key Prefix"
+                },
+                "QSS3BucketRegion": {
+                    "default": "Quick Start S3 bucket region"
+                },
+                "Secondary0NodeSubnet": {
+                    "default": "Secondary0 Node Subnet"
+                },
+                "Secondary1NodeSubnet": {
+                    "default": "Secondary1 Node Subnet"
+                },
+                "VPC": {
+                    "default": "VPC"
+                },
+                "VolumeSize": {
+                    "default": "Volume Size"
+                },
+                "VolumeType": {
+                    "default": "Volume Type"
+                }
+            }
+        }
+    },
+    "Parameters": {
+        "BastionSecurityGroupID": {
+            "Description": "ID of the Bastion Security Group (e.g., sg-7f16e910)",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "NameServerClusterCount": {
+            "Default": "2",
+            "Type": "String",
+            "Description": "Number of Apache RocketMQ NameServer nodes. Choose between 1-3",
+            "AllowedValues": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "BrokerClusterCount": {
+            "Description": "Number of Replica Set Members. Choose 1 or 3",
+            "Type": "String",
+            "Default": "3",
+            "AllowedValues": [
+                "1",
+                "3"
+            ]
+        },
+        "FlushDiskType": {
+            "Default": "ASYNC_FLUSH",
+            "Type": "String",
+            "Description": "Apache RocketMQ flush Disk Type [ASYNC_FLUSH,SYNC_FLUSH]",
+            "AllowedValues": [
+                "ASYNC_FLUSH",
+                "SYNC_FLUSH"
+            ]
+        },
+        "QSS3BucketName": {
+            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
+            "Default": "aws-cn-quickstart",
+            "Type": "String",
+            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+        },
+        "QSS3KeyPrefix": {
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "Default": "quickstart-rocketmq/",
+            "Type": "String",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with a hyphen (-)."
+        },
+        "QSS3BucketRegion": {
+            "Default": "cn-north-1",
+            "Description": "The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.",
+            "Type": "String"
+        },
+        "KeyPairName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Default": "home",
+            "Description": "Name of an existing EC2 KeyPair. RocketMQ instances will launch with this KeyPair."
+        },
+        "VolumeSize": {
+            "Type": "String",
+            "Description": "EBS Volume Size (data) to be attached to node in GBs",
+            "Default": "100"
+        },
+        "VolumeType": {
+            "Type": "String",
+            "Description": "EBS Volume Type (data) to be attached to node in GBs [io1,gp2]",
+            "Default": "gp2",
+            "AllowedValues": [
+                "gp2",
+                "io1"
+            ]
+        },
+        "Iops": {
+            "Type": "String",
+            "Description": "Iops of EBS volume when io1 type is chosen. Otherwise ignored",
+            "Default": "100"
+        },
+        "NameServerInstanceType": {
+            "Description": "Amazon EC2 instance type for the RocketMQ Nameserver.",
+            "Type": "String",
+            "Default": "m5.large",
+            "AllowedValues": [
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.12xlarge",
+                "m5.24xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.12xlarge",
+                "r5.16xlarge",
+                "r5.24xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5.18xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge"
+            ]
+        },
+        "BrokerNodeInstanceType": {
+            "Description": "Amazon EC2 instance type for the RocketMQ nodes.",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.12xlarge",
+                "m5.24xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.12xlarge",
+                "r5.16xlarge",
+                "r5.24xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5.18xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge"
+            ]
+        },
+        "VPC": {
+            "Type": "AWS::EC2::VPC::Id",
+            "Description": "VPC-ID of your existing Virtual Private Cloud (VPC) where you want to depoy RocketMQ cluster."
+        },
+        "PrimaryNodeSubnet": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Subnet-ID the existing subnet in your VPC where you want to deploy Primary node(s)."
+        },
+        "Secondary0NodeSubnet": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Subnet-ID the existing subnet in your VPC where you want to deploy Secondary node(s)."
+        },
+        "Secondary1NodeSubnet": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Subnet-ID the existing subnet in your VPC where you want to deploy Secondary node(s)."
+        }
+    },
+    "Conditions": {
+        "Launch1NameServer": {
+            "Fn::Equals": [
+                1,
+                1
+            ]
+        },
+        "Launch2NameServer": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        1,
+                        {
+                            "Ref": "NameServerClusterCount"
+                        }
+                    ]
+                }
+            ]
+        },
+        "Launch3NameServer": {
+            "Fn::And": [
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                1,
+                                {
+                                    "Ref": "NameServerClusterCount"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                2,
+                                {
+                                    "Ref": "NameServerClusterCount"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "CreateThreeReplicaSet": {
+            "Fn::Equals": [
+                {
+                    "Ref": "BrokerClusterCount"
+                },
+                "3"
+            ]
+        },
+        "CnRegionCondition": {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [ { "Ref": "AWS::Region" }, "cn-north-1" ]
+                },
+                {
+                    "Fn::Equals":[ { "Ref": "AWS::Region" }, "cn-northwest-1" ]
+                }
+            ]
+        },
+        "UsingDefaultBucket": {
+            "Fn::Equals": [
+            {
+                "Ref": "QSS3BucketName"
+            },
+            "aws-cn-quickstart"
+            ]
+        }
+    },
+    "Mappings": {
+        "AWSAMIRegionMap": {
+            "AMI": {
+                "AMZNLINUX": "amzn-ami-hvm-2018.03.0.20190611-x86_64-gp2"
+            },
+            "ap-northeast-1": {
+                "AMZNLINUX": "ami-02ddf94e5edc8e904"
+            },
+            "ap-northeast-2": {
+                "AMZNLINUX": "ami-0ecd78c22823e02ef"
+            },
+            "ap-south-1": {
+                "AMZNLINUX": "ami-05695932c5299858a"
+            },
+            "ap-southeast-1": {
+                "AMZNLINUX": "ami-043afc2b8b6cfba5c"
+            },
+            "ap-southeast-2": {
+                "AMZNLINUX": "ami-01393ce9a3ca55d67"
+            },
+            "ca-central-1": {
+                "AMZNLINUX": "ami-0fa94ecf2fef3420b"
+            },
+            "eu-central-1": {
+                "AMZNLINUX": "ami-0ba441bdd9e494102"
+            },
+            "eu-west-1": {
+                "AMZNLINUX": "ami-0e61341fa75fcaa18"
+            },
+            "eu-west-2": {
+                "AMZNLINUX": "ami-050b8344d77081f4b"
+            },
+            "sa-east-1": {
+                "AMZNLINUX": "ami-05b7dbc290217250d"
+            },
+            "us-east-1": {
+                "AMZNLINUX": "ami-0e2ff28bfb72a4e45"
+            },
+            "us-east-2": {
+                "AMZNLINUX": "ami-0998bf58313ab53da"
+            },
+            "us-west-1": {
+                "AMZNLINUX": "ami-021bb9f371690f97a"
+            },
+            "us-west-2": {
+                "AMZNLINUX": "ami-079f731edfe27c29c"
+            },
+            "cn-north-1":{
+                "AMZNLINUX": "ami-0e73c8a64c3afcefa"
+            },
+            "cn-northwest-1":{
+                "AMZNLINUX": "ami-0c6205ef045ce3916"
+            }
+        }
+    },
+    "Resources": {
+        "RocketMQServerAccessSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "GroupDescription": "Instances with access to RocketMQ servers"
+            }
+        },
+        "RocketMQNameServerSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "GroupDescription": "RocketMQ server management and access ports",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "SourceSecurityGroupId": {
+                            "Ref": "BastionSecurityGroupID"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 9876,
+                        "ToPort": 9876,
+                        "CidrIp" : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 8080,
+                        "ToPort": 8080,
+                        "CidrIp" : "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "RocketMQBrokerServerSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "GroupDescription": "RocketMQ server management and access ports",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "SourceSecurityGroupId": {
+                            "Ref": "BastionSecurityGroupID"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 30909,
+                        "ToPort": 30999,
+                        "CidrIp" : "0.0.0.0/0"
+
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 40911,
+                        "ToPort": 40999,
+                        "CidrIp" : "0.0.0.0/0"
+
+                    }
+                ]
+            }
+        },
+        "RocketMQNodeIAMRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    { "Fn::Sub": "ec2.${AWS::URLSuffix}" }
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "rocketmq-quickstart-policy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:Describe*",
+                                        "ec2:AttachNetworkInterface",
+                                        "ec2:AttachVolume",
+                                        "ec2:CreateTags",
+                                        "ec2:CreateVolume",
+                                        "ec2:RunInstances",
+                                        "ec2:StartInstances",
+                                        "ec2:DeleteVolume",
+                                        "ec2:CreateSecurityGroup",
+                                        "ec2:CreateSnapshot"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:GetObject"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": [
+                                           "arn:${AWS::Partition}:s3:::${S3Bucket}/${QSS3KeyPrefix}*",
+                                           {
+                                               "S3Bucket": {
+                                                   "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                                               }
+                                           }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "dynamodb:BatchGetItem",
+                                        "dynamodb:CreateTable",
+                                        "dynamodb:DeleteTable",
+                                        "dynamodb:DescribeTable",
+                                        "dynamodb:GetItem",
+                                        "dynamodb:PutItem",
+                                        "dynamodb:Query",
+                                        "dynamodb:Scan",
+                                        "dynamodb:UpdateItem",
+                                        "dynamodb:UpdateTable"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*ROCKETMQ_*"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "RocketMQNodeIAMProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "RocketMQNodeIAMRole"
+                    }
+                ]
+            }
+        },
+        "RocketMQNameServerNode0WaitForNodeInstallWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Condition": "Launch1NameServer",
+            "Properties": {}
+        },
+        "RocketMQNameServerNode0": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Condition": "Launch1NameServer",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq-node-nameserver.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "NameServerClusterCount": {
+                        "Ref": "NameServerClusterCount"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "NameServerInstanceType"
+                    },
+                    "NodeSubnet": {
+                        "Ref": "PrimaryNodeSubnet"
+                    },
+                    "RocketMQNameServerSecurityGroupID": {
+                        "Ref": "RocketMQNameServerSecurityGroup"
+                    },
+                    "RocketMQNodeIAMProfileID": {
+                        "Ref": "RocketMQNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSAMIRegionMap",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMZNLINUX"
+                        ]
+                    },
+                    "ReplicaNodeNameTag": "PrimaryRocketMQ-NameServer-Node-0",
+                    "NodeReplicaSetIndex": "0",
+                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
+                        "Ref": "RocketMQNameServerNode0WaitForNodeInstallWaitHandle"
+                    }
+                }
+            }
+        },
+        "RocketMQNameServerNode0WaitForNodeInstall": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Condition": "Launch1NameServer",
+            "DependsOn": "RocketMQNameServerNode0",
+            "Properties": {
+                "Handle": {
+                    "Ref": "RocketMQNameServerNode0WaitForNodeInstallWaitHandle"
+                },
+                "Timeout": "3600"
+            }
+        },
+        "RocketMQNameServerNode1WaitForNodeInstallWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {}
+        },
+        "RocketMQNameServerNode1": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Condition": "Launch2NameServer",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq-node-nameserver.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "NameServerClusterCount": {
+                        "Ref": "NameServerClusterCount"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "NameServerInstanceType"
+                    },
+                    "NodeSubnet": {
+                        "Ref": "PrimaryNodeSubnet"
+                    },
+                    "RocketMQNameServerSecurityGroupID": {
+                        "Ref": "RocketMQNameServerSecurityGroup"
+                    },
+                    "RocketMQNodeIAMProfileID": {
+                        "Ref": "RocketMQNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSAMIRegionMap",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMZNLINUX"
+                        ]
+                    },
+                    "ReplicaNodeNameTag": "RocketMQ-NameServer-Node-1",
+                    "NodeReplicaSetIndex": "1",
+                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
+                        "Ref": "RocketMQNameServerNode1WaitForNodeInstallWaitHandle"
+                    }
+                }
+            }
+        },
+        "RocketMQNameServerNode1WaitForNodeInstall": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Condition": "Launch2NameServer",
+            "DependsOn": "RocketMQNameServerNode1",
+            "Properties": {
+                "Handle": {
+                    "Ref": "RocketMQNameServerNode1WaitForNodeInstallWaitHandle"
+                },
+                "Timeout": "3600"
+            }
+        },
+        "RocketMQNameServerNode2WaitForNodeInstallWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {}
+        },
+        "RocketMQNameServerNode2": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Condition": "Launch3NameServer",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq-node-nameserver.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "NameServerClusterCount": {
+                        "Ref": "NameServerClusterCount"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "NameServerInstanceType"
+                    },
+                    "NodeSubnet": {
+                        "Ref": "PrimaryNodeSubnet"
+                    },
+                    "RocketMQNameServerSecurityGroupID": {
+                        "Ref": "RocketMQNameServerSecurityGroup"
+                    },
+                    "RocketMQNodeIAMProfileID": {
+                        "Ref": "RocketMQNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSAMIRegionMap",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMZNLINUX"
+                        ]
+                    },
+                    "ReplicaNodeNameTag": "RocketMQ-NameServer-Node-2",
+                    "NodeReplicaSetIndex": "2",
+                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
+                        "Ref": "RocketMQNameServerNode2WaitForNodeInstallWaitHandle"
+                    }
+                }
+            }
+        },
+        "RocketMQNameServerNode2WaitForNodeInstall": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Condition": "Launch3NameServer",
+            "DependsOn": "RocketMQNameServerNode2",
+            "Properties": {
+                "Handle": {
+                    "Ref": "RocketMQNameServerNode2WaitForNodeInstallWaitHandle"
+                },
+                "Timeout": "3600"
+            }
+        },
+        "PrimaryRocketMQBrokerNode0WaitForNodeInstallWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {}
+        },
+        "PrimaryRocketMQBrokerNode0": {
+            "Type": "AWS::CloudFormation::Stack",
+            "DependsOn": "RocketMQNameServerNode0",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq-node-broker.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "FlushDiskType": {
+                        "Ref": "FlushDiskType"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "BrokerNodeInstanceType"
+                    },
+                    "NodeSubnet": {
+                        "Ref": "PrimaryNodeSubnet"
+                    },
+                    "RocketMQBrokerServerSecurityGroupID": {
+                        "Ref": "RocketMQBrokerServerSecurityGroup"
+                    },
+                    "RocketMQNodeIAMProfileID": {
+                        "Ref": "RocketMQNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSAMIRegionMap",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMZNLINUX"
+                        ]
+                    },
+                    "ReplicaNodeNameTag": "PrimaryRocketMQ-Broker-Node-0",
+                    "NodeReplicaSetIndex": "0",
+                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
+                        "Ref": "PrimaryRocketMQBrokerNode0WaitForNodeInstallWaitHandle"
+                    }
+                }
+            }
+        },
+        "PrimaryRocketMQBrokerNode0WaitForNodeInstall": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "DependsOn": "PrimaryRocketMQBrokerNode0",
+            "Properties": {
+                "Handle": {
+                    "Ref": "PrimaryRocketMQBrokerNode0WaitForNodeInstallWaitHandle"
+                },
+                "Timeout": "3600"
+            }
+        },
+        "SecondaryRocketMQBrokerNode0WaitForNodeInstallWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {},
+            "Condition": "CreateThreeReplicaSet"
+        },
+        "SecondaryRocketMQBrokerNode0": {
+            "Condition": "CreateThreeReplicaSet",
+            "Type": "AWS::CloudFormation::Stack",
+            "DependsOn": "RocketMQNameServerNode0",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq-node-broker.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "FlushDiskType": {
+                        "Ref": "FlushDiskType"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "BrokerNodeInstanceType"
+                    },
+                    "NodeSubnet": {
+                        "Ref": "Secondary0NodeSubnet"
+                    },
+                    "RocketMQBrokerServerSecurityGroupID": {
+                        "Ref": "RocketMQBrokerServerSecurityGroup"
+                    },
+                    "RocketMQNodeIAMProfileID": {
+                        "Ref": "RocketMQNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSAMIRegionMap",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMZNLINUX"
+                        ]
+                    },
+                    "ReplicaNodeNameTag": "Secondary-RocketMQ-Broker-Node-0",
+                    "NodeReplicaSetIndex": "1",
+                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
+                        "Ref": "SecondaryRocketMQBrokerNode0WaitForNodeInstallWaitHandle"
+                    }
+                }
+            }
+        },
+        "SecondaryRocketMQBrokerNode0WaitForNodeInstall": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Condition": "CreateThreeReplicaSet",
+            "DependsOn": "SecondaryRocketMQBrokerNode0",
+            "Properties": {
+                "Handle": {
+                    "Ref": "SecondaryRocketMQBrokerNode0WaitForNodeInstallWaitHandle"
+                },
+                "Timeout": "3600"
+            }
+        },
+        "SecondaryRocketMQBrokerNode1WaitForNodeInstallWaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {},
+            "Condition": "CreateThreeReplicaSet"
+        },
+        "SecondaryRocketMQBrokerNode1": {
+            "Condition": "CreateThreeReplicaSet",
+            "Type": "AWS::CloudFormation::Stack",
+            "DependsOn": "RocketMQNameServerNode0",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq-node-broker.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "FlushDiskType": {
+                        "Ref": "FlushDiskType"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "BrokerNodeInstanceType"
+                    },
+                    "NodeSubnet": {
+                        "Ref": "Secondary1NodeSubnet"
+                    },
+                    "RocketMQBrokerServerSecurityGroupID": {
+                        "Ref": "RocketMQBrokerServerSecurityGroup"
+                    },
+                    "RocketMQNodeIAMProfileID": {
+                        "Ref": "RocketMQNodeIAMProfile"
+                    },
+                    "VPC": {
+                        "Ref": "VPC"
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    },
+                    "StackName": {
+                        "Ref": "AWS::StackName"
+                    },
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "AWSAMIRegionMap",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMZNLINUX"
+                        ]
+                    },
+                    "ReplicaNodeNameTag": "Secondary-RocketMQ-Broker-Node-1",
+                    "NodeReplicaSetIndex": "2",
+                    "ReplicaNodeWaitForNodeInstallWaitHandle": {
+                        "Ref": "SecondaryRocketMQBrokerNode1WaitForNodeInstallWaitHandle"
+                    }
+                }
+            }
+        },
+        "SecondaryRocketMQBrokerNode1WaitForNodeInstall": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "Condition": "CreateThreeReplicaSet",
+            "DependsOn": "SecondaryRocketMQBrokerNode1",
+            "Properties": {
+                "Handle": {
+                    "Ref": "SecondaryRocketMQBrokerNode1WaitForNodeInstallWaitHandle"
+                },
+                "Timeout": "3600"
+            }
+        }
+    },
+    "Outputs": {
+        "PrimaryReplicaNodeIp": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "PrimaryRocketMQBrokerNode0",
+                    "Outputs.NodePrivateIp"
+                ]
+            },
+            "Description": "Private IP Address of Primary Replica Node"
+        },
+        "SecondaryRocketMQBrokerNode0Ip": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "SecondaryRocketMQBrokerNode0",
+                    "Outputs.NodePrivateIp"
+                ]
+            },
+            "Description": "Private IP Address of Secondary Replica 0 Node",
+            "Condition": "CreateThreeReplicaSet"
+        },
+        "SecondaryRocketMQBrokerNode1Ip": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "SecondaryRocketMQBrokerNode1",
+                    "Outputs.NodePrivateIp"
+                ]
+            },
+            "Description": "Private IP Address of Secondary Replica 1 Node",
+            "Condition": "CreateThreeReplicaSet"
+        },
+        "RocketMQServerAccessSecurityGroup": {
+            "Value": {
+                "Ref": "RocketMQServerAccessSecurityGroup"
+            },
+            "Description": "Apache RocketMQ Access Security Group"
+        }
+    }
+}

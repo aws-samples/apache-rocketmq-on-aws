@@ -1,0 +1,691 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "(SO8006) - Deploy Apache RocketMQ Cluster on a New VPC in AWS",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Network Configuration"
+                    },
+                    "Parameters": [
+                        "AvailabilityZones",
+                        "NumberOfAZs",
+                        "VPCCIDR",
+                        "PrivateSubnet1CIDR",
+                        "PrivateSubnet2CIDR",
+                        "PrivateSubnet3CIDR",
+                        "PublicSubnet1CIDR",
+                        "PublicSubnet2CIDR",
+                        "PublicSubnet3CIDR",
+                        "RemoteAccessCIDR"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Security Configuration"
+                    },
+                    "Parameters": [
+                        "KeyPairName"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Linux Bastion Amazon EC2 Configuration"
+                    },
+                    "Parameters": [
+                        "BastionAMIOS",
+                        "BastionInstanceType",
+                        "NumBastionHosts"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "RocketMQ Cluster Configuration"
+                    },
+                    "Parameters": [
+                        "NameServerClusterCount",
+                        "BrokerClusterCount",
+                        "Iops",
+                        "RocketMQVersion",
+                        "NameServerInstanceType",
+                        "BrokerNodeInstanceType",
+                        "FlushDiskType",
+                        "VolumeSize",
+                        "VolumeType"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "AWS Quick Start Configuration"
+                    },
+                    "Parameters": [
+                        "QSS3BucketName",
+                        "QSS3KeyPrefix",
+                        "QSS3BucketRegion"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "AvailabilityZones": {
+                    "default": "Availability Zones"
+                },
+                "BastionAMIOS": {
+                    "default": "Bastion AMI Operating System"
+                },
+                "BastionInstanceType": {
+                    "default": "Bastion Instance Type"
+                },
+                "NameServerClusterCount": {
+                    "default": "Number of Apache RocketMQ NameServer Cluster Node"
+                },
+                "BrokerClusterCount": {
+                    "default": "Number of Apache RocketMQ Broker Cluster Node"
+                },
+                "Iops": {
+                    "default": "IOPS"
+                },
+                "KeyPairName": {
+                    "default": "Key Pair Name"
+                },
+                "NumBastionHosts": {
+                    "default": "Number of Bastion Hosts"
+                },
+                "RocketMQVersion": {
+                    "default": "RocketMQ Version"
+                },
+                "NameServerInstanceType": {
+                    "default": "NameServer Intance type"
+                },
+                "BrokerNodeInstanceType": {
+                    "default": "Broker Node Instance Type"
+                },
+                "FlushDiskType": {
+                    "default": "Apache RocketMQ flush Disk Type"
+                },
+                "NumberOfAZs": {
+                    "default": "Number of Availability Zones"
+                },
+                "PrivateSubnet1CIDR": {
+                    "default": "Private Subnet 1 CIDR"
+                },
+                "PrivateSubnet2CIDR": {
+                    "default": "Private Subnet 2 CIDR"
+                },
+                "PrivateSubnet3CIDR": {
+                    "default": "Private Subnet 3 CIDR"
+                },
+                "PublicSubnet1CIDR": {
+                    "default": "Public Subnet 1 CIDR"
+                },
+                "PublicSubnet2CIDR": {
+                    "default": "Public Subnet 2 CIDR"
+                },
+                "PublicSubnet3CIDR": {
+                    "default": "Public Subnet 3 CIDR"
+                },
+                "QSS3BucketName": {
+                    "default": "Quick Start S3 Bucket Name"
+                },
+                "QSS3KeyPrefix": {
+                    "default": "Quick Start S3 Key Prefix"
+                },
+                "QSS3BucketRegion": {
+                    "default": "Quick Start S3 bucket region"
+                },
+                "RemoteAccessCIDR": {
+                    "default": "Allowed Bastion External Access CIDR"
+                },
+                "VolumeSize": {
+                    "default": "Volume Size"
+                },
+                "VolumeType": {
+                    "default": "Volume Type"
+                },
+                "VPCCIDR": {
+                    "default": "VPC CIDR"
+                }
+            }
+        }
+    },
+    "Parameters": {
+        "PrivateSubnet2CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.32.0/19",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR block for private subnet 2 located in Availability Zone 2."
+        },
+          "PrivateSubnet3CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.64.0/19",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR block for private subnet 3 located in Availability Zone 3."
+        },
+        "QSS3BucketName": {
+            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
+            "Default": "aws-cn-quickstart",
+            "Type": "String",
+            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+        },
+        "PublicSubnet2CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.144.0/20",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR Block for the public DMZ subnet 2 located in Availability Zone 2"
+        },
+          "PublicSubnet3CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.160.0/20",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR Block for the public DMZ subnet 3 located in Availability Zone 3"
+        },
+        "KeyPairName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Public/private key pairs allow you to securely connect to your instance after it launches"
+        },
+        "PublicSubnet1CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.128.0/20",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR Block for the public DMZ subnet 1 located in Availability Zone 1"
+        },
+        "BastionAMIOS": {
+            "AllowedValues": [
+                "Amazon-Linux-HVM",
+                "CentOS-7-HVM",
+                "Ubuntu-Server-14.04-LTS-HVM",
+                "Ubuntu-Server-16.04-LTS-HVM"
+            ],
+            "Default": "Amazon-Linux-HVM",
+            "Description": "The Linux distribution for the AMI to be used for the bastion instances",
+            "Type": "String"
+        },
+        "RemoteAccessCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/x",
+            "Description": "Allowed CIDR block for external SSH access to the bastions"
+        },
+        "PrivateSubnet1CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.0.0/19",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR block for private subnet 1 located in Availability Zone 1."
+        },
+        "BastionInstanceType": {
+            "Default": "t2.micro",
+            "Type": "String",
+            "Description": "Amazon EC2 instance type for the second bastion instance",
+            "AllowedValues": [
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge"
+            ]
+        },
+        "NumBastionHosts": {
+            "AllowedValues": [
+                "1",
+                "2",
+                "3",
+                "4"
+            ],
+            "Default": "1",
+            "Description": "Enter the number of bastion hosts to create",
+            "Type": "String"
+        },
+        "VPCCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "Default": "10.0.0.0/16",
+            "Type": "String",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Description": "CIDR Block for the VPC"
+        },
+        "QSS3KeyPrefix": {
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "Default": "quickstart-rocketmq/",
+            "Type": "String",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with a hyphen (-)."
+        },
+        "QSS3BucketRegion": {
+            "Default": "cn-north-1",
+            "Description": "The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.",
+            "Type": "String"
+        },
+        "AvailabilityZones": {
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved. 1 or 3 AZs are used for this deployment."
+        },
+        "NumberOfAZs": {
+            "AllowedValues": [
+                "2",
+                "3"
+            ],
+            "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
+            "Type": "String"
+        },
+        "NameServerInstanceType": {
+            "Default": "m5.large",
+            "Type": "String",
+            "Description": "Amazon EC2 instance type for the RocketMQ nameserver nodes.",
+            "AllowedValues": [
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.12xlarge",
+                "m5.24xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.12xlarge",
+                "r5.16xlarge",
+                "r5.24xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5.18xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge"
+            ]
+        },
+        "BrokerNodeInstanceType": {
+            "Default": "m5.xlarge",
+            "Type": "String",
+            "Description": "Amazon EC2 instance type for the RocketMQ broker nodes.",
+            "AllowedValues": [
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.12xlarge",
+                "m5.24xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.12xlarge",
+                "r5.16xlarge",
+                "r5.24xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5.18xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge"
+            ]
+        },
+        "VolumeSize": {
+            "Default": "400",
+            "Type": "String",
+            "Description": "EBS Volume Size (data) to be attached to node in GBs"
+        },
+        "VolumeType": {
+            "Default": "gp2",
+            "Type": "String",
+            "Description": "EBS Volume Type (data) to be attached to node in GBs [io1,gp2]",
+            "AllowedValues": [
+                "gp2",
+                "io1"
+            ]
+        },
+        "RocketMQVersion": {
+            "Default": "4.7.1",
+            "Type": "String",
+            "Description": "RocketMQ version",
+            "AllowedValues": [
+                "4.7.1"
+            ]
+        },
+        "NameServerClusterCount": {
+            "Default": "2",
+            "Type": "String",
+            "Description": "Number of Apache RocketMQ NameServer nodes. Choose between 1-3",
+            "AllowedValues": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "BrokerClusterCount": {
+            "Default": "3",
+            "Type": "String",
+            "Description": "Number of Replica Set Members. Choose 1 or 3",
+            "AllowedValues": [
+                "1",
+                "3"
+            ]
+        },
+        "FlushDiskType": {
+            "Default": "ASYNC_FLUSH",
+            "Type": "String",
+            "Description": "Apache RocketMQ flush Disk Type [ASYNC_FLUSH,SYNC_FLUSH]",
+            "AllowedValues": [
+                "ASYNC_FLUSH",
+                "SYNC_FLUSH"
+            ]
+        },
+        "Iops": {
+            "Default": "100",
+            "Type": "String",
+            "Description": "Iops of EBS volume when io1 type is chosen. Otherwise ignored"
+        }
+    },
+    "Conditions": {
+        "CreateThreeReplicaSet": {
+            "Fn::Equals": [
+                {
+                    "Ref": "BrokerClusterCount"
+                },
+                "3"
+            ]
+        },
+        "RepeatSubnet": {
+            "Fn::Equals": [
+                {
+                    "Ref": "NumberOfAZs"
+                },
+                "2"
+            ]
+        },
+        "GovCloudCondition": {
+            "Fn::Equals": [
+                {
+                    "Ref": "AWS::Region"
+                },
+                "us-gov-west-1"
+            ]
+        },
+        "UsingDefaultBucket": {
+            "Fn::Equals": [
+            {
+                "Ref": "QSS3BucketName"
+            },
+            "aws-cn-quickstart"
+            ]
+        }
+    },
+    "Resources" : {
+            "VPCStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://aws-cn-quickstart-cn-north-1.s3.cn-north-1.amazonaws.com.cn/quickstart-aws-vpc/templates/aws-vpc.template",
+                "Parameters": {
+                    "AvailabilityZones": {
+                        "Fn::Join": [
+                            ",",
+                            {
+                                "Ref": "AvailabilityZones"
+                            }
+                        ]
+                    },
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "NumberOfAZs": {
+                        "Ref": "NumberOfAZs"
+                    },
+                    "PrivateSubnet1ACIDR": {
+                        "Ref": "PrivateSubnet1CIDR"
+                    },
+                    "PrivateSubnet2ACIDR": {
+                        "Ref": "PrivateSubnet2CIDR"
+                    },
+                    "PrivateSubnet3ACIDR": {
+                        "Ref": "PrivateSubnet3CIDR"
+                    },
+                    "PublicSubnet1CIDR": {
+                        "Ref": "PublicSubnet1CIDR"
+                    },
+                    "PublicSubnet2CIDR": {
+                        "Ref": "PublicSubnet2CIDR"
+                    },
+                    "PublicSubnet3CIDR": {
+                        "Ref": "PublicSubnet3CIDR"
+                    },
+                    "VPCCIDR": {
+                        "Ref": "VPCCIDR"
+                    }
+                }
+            }
+        },
+        "BastionStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": "https://aws-cn-quickstart-cn-north-1.s3.cn-north-1.amazonaws.com.cn/quickstart-linux-bastion/templates/linux-bastion.template",
+                "Parameters": {
+                    "BastionInstanceType": {
+                        "Ref": "BastionInstanceType"
+                    },
+                    "NumBastionHosts": {
+                        "Ref": "NumBastionHosts"
+                    },
+                    "BastionAMIOS": {
+                        "Ref": "BastionAMIOS"
+                    },
+                    "EnableTCPForwarding": "true",
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "PublicSubnet1ID": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.PublicSubnet1ID"
+                        ]
+                    },
+                    "PublicSubnet2ID": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.PublicSubnet2ID"
+                        ]
+                    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-linux-bastion/"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "RemoteAccessCIDR": {
+                        "Ref": "RemoteAccessCIDR"
+                    },
+                    "VPCID": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.VPCID"
+                        ]
+                    }
+                }
+            }
+        },
+        "RocketMQStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": [
+                        "https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/rocketmq.template",
+                        {
+                            "S3Region": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Ref": "AWS::Region" }, {"Ref": "QSS3BucketRegion"}]
+                            },
+                            "S3Bucket": {
+                                "Fn::If": ["UsingDefaultBucket",  { "Fn::Sub": "${QSS3BucketName}-${AWS::Region}" }, {"Ref": "QSS3BucketName"}]
+                            }
+                        }
+                    ]
+                },
+                "Parameters": {
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "QSS3BucketRegion": {
+                        "Ref": "QSS3BucketRegion"
+                    },
+                    "BastionSecurityGroupID": {
+                        "Fn::GetAtt": [
+                            "BastionStack",
+                            "Outputs.BastionSecurityGroupID"
+                        ]
+                    },
+                    "NameServerClusterCount": {
+                        "Ref": "NameServerClusterCount"
+                    },
+                    "BrokerClusterCount": {
+                        "Ref": "BrokerClusterCount"
+                    },
+                    "FlushDiskType": {
+                        "Ref": "FlushDiskType"
+                    },
+                    "Iops": {
+                        "Ref": "Iops"
+                    },
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "NameServerInstanceType": {
+                        "Ref": "NameServerInstanceType"
+                    },
+                    "BrokerNodeInstanceType": {
+                        "Ref": "BrokerNodeInstanceType"
+                    },
+                    "PrimaryNodeSubnet": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.PrivateSubnet1AID"
+                        ]
+                    },
+                    "Secondary0NodeSubnet": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.PrivateSubnet2AID"
+                        ]
+                    },
+                    "Secondary1NodeSubnet": {
+                        "Fn::If": [
+                            "RepeatSubnet",
+                            {
+                                "Fn::GetAtt": [
+                                    "VPCStack",
+                                    "Outputs.PrivateSubnet2AID"
+                                ]
+                            },
+                            {
+                                "Fn::GetAtt": [
+                                    "VPCStack",
+                                    "Outputs.PrivateSubnet3AID"
+                                ]
+                            }
+                        ]
+                    },
+                    "VPC": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.VPCID"
+                        ]
+                    },
+                    "VolumeSize": {
+                        "Ref": "VolumeSize"
+                    },
+                    "VolumeType": {
+                        "Ref": "VolumeType"
+                    }
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "PrimaryReplicaNodeIp": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "RocketMQStack",
+                    "Outputs.PrimaryReplicaNodeIp"
+                ]
+            },
+            "Description": "Private IP Address of Primary Replica Node"
+        },
+        "SecondaryRocketMQBrokerNode0Ip": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "RocketMQStack",
+                    "Outputs.SecondaryRocketMQBrokerNode0Ip"
+                ]
+            },
+            "Description": "Private IP Address of Secondary Replica 0 Node",
+            "Condition" : "CreateThreeReplicaSet"
+        },
+        "SecondaryRocketMQBrokerNode1Ip": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "RocketMQStack",
+                    "Outputs.SecondaryRocketMQBrokerNode1Ip"
+                ]
+            },
+            "Description": "Private IP Address of Secondary Replica 1 Node",
+            "Condition" : "CreateThreeReplicaSet"
+        },
+        "RocketMQServerAccessSecurityGroup": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "RocketMQStack",
+                    "Outputs.RocketMQServerAccessSecurityGroup"
+                ]
+            },
+            "Description": "RocketMQ Access Security Group"
+        }
+    }
+}

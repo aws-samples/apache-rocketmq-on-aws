@@ -1,0 +1,8 @@
+[submodule "submodules/quickstart-aws-vpc"]
+	path = submodules/quickstart-aws-vpc
+	url = ../../nwcdorg/quickstart-aws-vpc.git
+	branch = aws-cn
+[submodule "submodules/quickstart-linux-bastion"]
+	path = submodules/quickstart-linux-bastion
+	url = ../../nwcdorg/quickstart-linux-bastion.git
+        branch = aws-cn

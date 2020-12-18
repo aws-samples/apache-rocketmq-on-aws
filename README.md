@@ -1,17 +1,22 @@
-## My Project
+# Apache RocketMQ on the AWS Cloud
 
-TODO: Fill this README out!
+[中文](./README.zh.md)
 
-Be sure to:
+This solution provides a one click cloudformation deployment to sets up a high available Apache RocketMQ cluster on AWS environment.
 
-* Change the title in this README
-* Edit your repository description on GitHub
+Apache RocketMQ is a unified messaging engine as well as lightweight data processing platform. The RocketMQ on AWS solution enables customers to quickly deploy a RocketMQ cluster in AWS Cloud. The basic cluster settings such as EC2 instance types are also configurable during the deployment.
 
-## Security
+The Quick Start offers two deployment options:
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+- Deploying Apache RocketMQ into a new virtual private cloud (VPC) on AWS
+- Deploying Apache RocketMQ into an existing VPC on AWS
 
-## License
+You can also use the AWS CloudFormation templates as a starting point for your own implementation.
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+## Architecure
+
+![Quick Start architecture for RocketMQ on AWS](./assets/architecture.jpeg)
+
+For architectural details, best practices, step-by-step instructions, and customization options, see the
+[deployment guide](https://www.amazonaws.cn/solutions/RocketMQ/).
 
