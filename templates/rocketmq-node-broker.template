@@ -120,6 +120,14 @@
                 "SYNC_FLUSH"
             ]
         },
+        "RocketMQVersion": {
+            "Default": "4.7.1",
+            "Type": "String",
+            "Description": "RocketMQ version",
+            "AllowedValues": [
+                "4.7.1"
+            ]
+        },
         "ReplicaNodeWaitForNodeInstallWaitHandle": {
             "Description": "Pre-signed Wait Handle URL to send signal for associated wait condition",
             "Type": "String"
@@ -430,6 +438,23 @@
                                             "export FLUSHDISKTYPE='",
                                             {
                                                 "Ref": "FlushDiskType"
+                                            },
+                                            "'",
+                                            "\""
+                                        ]
+                                    ]
+                                },
+                                " >> config.sh\n",
+                                "# Store Apache RocketMQ version\n",
+                                "echo ",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "\"",
+                                            "export RocketMQVersion='",
+                                            {
+                                                "Ref": "RocketMQVersion"
                                             },
                                             "'",
                                             "\""

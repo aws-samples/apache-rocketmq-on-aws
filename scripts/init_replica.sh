@@ -205,26 +205,6 @@ else
 fi
 
 #################################################################
-# End All Nodes
-#################################################################
-
-check_primary() {
-    expected_state=$1
-    master_substr=\"ismaster\"\ :\ ${expected_state}
-    while true; do
-      check_master=$( mongo --eval "printjson(db.isMaster())" )
-      log "${check_master}..."
-      if [[ $check_master == *"$master_substr"* ]]; then
-        log "Node is in desired state, proceed with security setup"
-        break
-      else
-        log "Wait for node to become primary"
-        sleep 10
-      fi
-    done
-}
-
-#################################################################
 # Setup RocketMQ servers and config nodes
 #################################################################
 echo "start download the rocketmq release 4.7.1"
@@ -239,8 +219,12 @@ then
     wget https://mirrors.bfsu.edu.cn/apache/rocketmq/4.7.1/rocketmq-all-4.7.1-bin-release.zip
     if [[ $? -ne 0 ]]
     then
-      echo "failed to download the rocketMQ from website"
-      exit 1
+      wget https://archive.apache.org/dist/rocketmq/4.7.1/rocketmq-all-4.7.1-bin-release.zip
+      if [[ $? -ne 0 ]]
+      then
+        echo "failed to download the rocketMQ from website"
+        exit 1
+      fi
     fi
   fi
 fi

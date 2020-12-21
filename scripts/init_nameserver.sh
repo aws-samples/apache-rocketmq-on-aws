@@ -204,8 +204,12 @@ then
     wget https://mirrors.bfsu.edu.cn/apache/rocketmq/4.7.1/rocketmq-all-4.7.1-bin-release.zip
     if [[ $? -ne 0 ]]
     then
-      echo "failed to download the rocketMQ from website"
-      exit 1
+      wget https://archive.apache.org/dist/rocketmq/4.7.1/rocketmq-all-4.7.1-bin-release.zip
+      if [[ $? -ne 0 ]]
+      then
+        echo "failed to download the rocketMQ from website"
+        exit 1
+      fi
     fi
   fi
 fi

@@ -600,6 +600,9 @@
                     "NameServerInstanceType": {
                         "Ref": "NameServerInstanceType"
                     },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
+                    },
                     "BrokerNodeInstanceType": {
                         "Ref": "BrokerNodeInstanceType"
                     },

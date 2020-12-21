@@ -60,6 +60,9 @@
                 "FlushDiskType": {
                     "default": "Apache RocketMQ flush Disk Type"
                 },
+                "RocketMQVersion": {
+                    "Ref": "RocketMQVersion"
+                },
                 "PrimaryNodeSubnet": {
                     "default": "Primary Node Subnet"
                 },
@@ -121,6 +124,14 @@
             "AllowedValues": [
                 "ASYNC_FLUSH",
                 "SYNC_FLUSH"
+            ]
+        },
+        "RocketMQVersion": {
+            "Default": "4.7.1",
+            "Type": "String",
+            "Description": "RocketMQ version",
+            "AllowedValues": [
+                "4.7.1"
             ]
         },
         "QSS3BucketName": {
@@ -605,6 +616,9 @@
                     "BrokerClusterCount": {
                         "Ref": "BrokerClusterCount"
                     },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
+                    },
                     "Iops": {
                         "Ref": "Iops"
                     },
@@ -700,6 +714,9 @@
                     "BrokerClusterCount": {
                         "Ref": "BrokerClusterCount"
                     },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
+                    },
                     "Iops": {
                         "Ref": "Iops"
                     },
@@ -794,6 +811,9 @@
                     },
                     "BrokerClusterCount": {
                         "Ref": "BrokerClusterCount"
+                    },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -899,6 +919,9 @@
                     "BrokerNodeInstanceType": {
                         "Ref": "BrokerNodeInstanceType"
                     },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
+                    },
                     "NodeSubnet": {
                         "Ref": "PrimaryNodeSubnet"
                     },
@@ -985,6 +1008,9 @@
                     },
                     "FlushDiskType": {
                         "Ref": "FlushDiskType"
+                    },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
                     },
                     "Iops": {
                         "Ref": "Iops"
@@ -1082,6 +1108,9 @@
                     },
                     "FlushDiskType": {
                         "Ref": "FlushDiskType"
+                    },
+                    "RocketMQVersion": {
+                        "Ref": "RocketMQVersion"
                     },
                     "Iops": {
                         "Ref": "Iops"
