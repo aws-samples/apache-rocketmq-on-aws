@@ -131,7 +131,8 @@
             "Type": "String",
             "Description": "RocketMQ version",
             "AllowedValues": [
-                "4.7.1"
+                "4.7.1",
+                "4.8.0"
             ]
         },
         "QSS3BucketName": {

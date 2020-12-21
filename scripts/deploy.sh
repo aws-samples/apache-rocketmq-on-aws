@@ -15,6 +15,8 @@ echo "Please enter the BrokerClusterCount, 1 or 3"
 read BrokerClusterCount
 echo "Please enter the number of nameserver(1/2/3):"
 read NameServerClusterCount
+echo "Which Apache RocketMQ version to deploy:(4.7.1 or 4.8.0)"
+read RocketMQVersion
 
 AWS_DEFAULT_REGION=${S3Region}
 
@@ -40,4 +42,4 @@ aws s3 cp ../submodules/quickstart-linux-bastion/scripts/bastion_bootstrap.sh s3
 
 
 template_path=`pwd`
-aws cloudformation create-stack --stack-name rocketMQ --template-body file:///${template_path}/../templates/rocketmq-master.template --parameters "[{\"ParameterKey\":\"AvailabilityZones\",\"ParameterValue\":\"${AvailabilityZones}\"},{\"ParameterKey\":\"BrokerClusterCount\",\"ParameterValue\":\"${BrokerClusterCount}\"},{\"ParameterKey\":\"NumberOfAZs\",\"ParameterValue\":\"${NumberOfAZs}\"},{\"ParameterKey\":\"RemoteAccessCIDR\",\"ParameterValue\":\"0.0.0.0/0\"},{\"ParameterKey\":\"VolumeSize\",\"ParameterValue\":\"100\"},{\"ParameterKey\":\"QSS3BucketName\",\"ParameterValue\":\"${S3Bucket}\"},{\"ParameterKey\":\"QSS3BucketRegion\",\"ParameterValue\":\"${S3Region}\"},{\"ParameterKey\":\"QSS3KeyPrefix\",\"ParameterValue\":\"${QSS3KeyPrefix}\"},{\"ParameterKey\":\"KeyPairName\",\"ParameterValue\":\"${KeyPairName}\"},{\"ParameterKey\":\"NameServerInstanceType\",\"ParameterValue\":\"m5.large\"},{\"ParameterKey\":\"BrokerNodeInstanceType\",\"ParameterValue\":\"m5.xlarge\"},{\"ParameterKey\":\"NameServerClusterCount\",\"ParameterValue\":\"${NameServerClusterCount}\"}]" --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name rocketMQ --template-body file:///${template_path}/../templates/rocketmq-master.template --parameters "[{\"ParameterKey\":\"AvailabilityZones\",\"ParameterValue\":\"${AvailabilityZones}\"},{\"ParameterKey\":\"BrokerClusterCount\",\"ParameterValue\":\"${BrokerClusterCount}\"},{\"ParameterKey\":\"NumberOfAZs\",\"ParameterValue\":\"${NumberOfAZs}\"},{\"ParameterKey\":\"RemoteAccessCIDR\",\"ParameterValue\":\"0.0.0.0/0\"},{\"ParameterKey\":\"VolumeSize\",\"ParameterValue\":\"100\"},{\"ParameterKey\":\"QSS3BucketName\",\"ParameterValue\":\"${S3Bucket}\"},{\"ParameterKey\":\"QSS3BucketRegion\",\"ParameterValue\":\"${S3Region}\"},{\"ParameterKey\":\"QSS3KeyPrefix\",\"ParameterValue\":\"${QSS3KeyPrefix}\"},{\"ParameterKey\":\"KeyPairName\",\"ParameterValue\":\"${KeyPairName}\"},{\"ParameterKey\":\"NameServerInstanceType\",\"ParameterValue\":\"m5.large\"},{\"ParameterKey\":\"BrokerNodeInstanceType\",\"ParameterValue\":\"m5.xlarge\"},{\"ParameterKey\":\"NameServerClusterCount\",\"ParameterValue\":\"${NameServerClusterCount}\"},{\"ParameterKey\":\"RocketMQVersion\",\"ParameterValue\":\"${RocketMQVersion}\"}]" --capabilities CAPABILITY_NAMED_IAM
