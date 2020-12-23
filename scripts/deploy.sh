@@ -23,7 +23,7 @@ AWS_DEFAULT_REGION=${S3Region}
 if aws s3 ls "s3://${S3Bucket}" 2>&1 | grep -q 'NoSuchBucket'
 then
    echo "S3 bucket ${S3Bucket} does not exist"
-   aws s3api create-bucket --bucket ${S3Bucket} --region $S3Region
+   aws s3api create-bucket --bucket ${S3Bucket} --region $S3Region --create-bucket-configuration LocationConstraint=${S3Region}
 else
    echo "S3 bucket ${S3Bucket} already exist "
 fi
