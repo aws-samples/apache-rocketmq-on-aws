@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "This template is used for setting up a single rocketmq broker node",
+    "Description": "(SO8006) - This template is used for setting up a single rocketmq broker node",
     "Parameters": {
         "VPC": {
             "Type": "AWS::EC2::VPC::Id",
