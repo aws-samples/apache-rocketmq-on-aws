@@ -360,7 +360,7 @@
     "Mappings": {
         "AWSAMIRegionMap": {
             "AMI": {
-                "AMZNLINUX": "amzn-ami-hvm-2018.03.0.20190611-x86_64-gp2"
+                "AMZNLINUX": "amzn2-ami-hvm-2.0.20201218.1-x86_64-gp2"
             },
             "ap-northeast-1": {
                 "AMZNLINUX": "ami-02ddf94e5edc8e904"
@@ -393,16 +393,16 @@
                 "AMZNLINUX": "ami-05b7dbc290217250d"
             },
             "us-east-1": {
-                "AMZNLINUX": "ami-0e2ff28bfb72a4e45"
+                "AMZNLINUX": "ami-0be2609ba883822ec"
             },
             "us-east-2": {
-                "AMZNLINUX": "ami-0998bf58313ab53da"
+                "AMZNLINUX": "ami-0a0ad6b70e61be944"
             },
             "us-west-1": {
-                "AMZNLINUX": "ami-021bb9f371690f97a"
+                "AMZNLINUX": "ami-03130878b60947df3"
             },
             "us-west-2": {
-                "AMZNLINUX": "ami-079f731edfe27c29c"
+                "AMZNLINUX": "ami-0a36eb8fadc976275"
             },
             "cn-north-1":{
                 "AMZNLINUX": "ami-0e73c8a64c3afcefa"

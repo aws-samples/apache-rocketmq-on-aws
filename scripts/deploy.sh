@@ -23,7 +23,12 @@ AWS_DEFAULT_REGION=${S3Region}
 if aws s3 ls "s3://${S3Bucket}" 2>&1 | grep -q 'NoSuchBucket'
 then
    echo "S3 bucket ${S3Bucket} does not exist"
-   aws s3api create-bucket --bucket ${S3Bucket} --region $S3Region --create-bucket-configuration LocationConstraint=${S3Region}
+   if [[ ${S3Bucket} == "us-east-1" ]]
+   then
+    aws s3api create-bucket --bucket ${S3Bucket} --region $S3Region
+   else
+    aws s3api create-bucket --bucket ${S3Bucket} --region $S3Region --create-bucket-configuration LocationConstraint=${S3Region}
+    fi
 else
    echo "S3 bucket ${S3Bucket} already exist "
 fi
@@ -43,4 +48,5 @@ aws s3 cp ../submodules/quickstart-linux-bastion/scripts/bastion_bootstrap.sh s3
 
 template_path=`pwd`
 currentTime=`date +%F-%H-%M`
+
 aws cloudformation create-stack --stack-name rocketMQ-${currentTime} --template-body file:///${template_path}/../templates/rocketmq-master.template --parameters "[{\"ParameterKey\":\"AvailabilityZones\",\"ParameterValue\":\"${AvailabilityZones}\"},{\"ParameterKey\":\"BrokerClusterCount\",\"ParameterValue\":\"${BrokerClusterCount}\"},{\"ParameterKey\":\"NumberOfAZs\",\"ParameterValue\":\"${NumberOfAZs}\"},{\"ParameterKey\":\"RemoteAccessCIDR\",\"ParameterValue\":\"0.0.0.0/0\"},{\"ParameterKey\":\"VolumeSize\",\"ParameterValue\":\"100\"},{\"ParameterKey\":\"QSS3BucketName\",\"ParameterValue\":\"${S3Bucket}\"},{\"ParameterKey\":\"QSS3BucketRegion\",\"ParameterValue\":\"${S3Region}\"},{\"ParameterKey\":\"QSS3KeyPrefix\",\"ParameterValue\":\"${QSS3KeyPrefix}\"},{\"ParameterKey\":\"KeyPairName\",\"ParameterValue\":\"${KeyPairName}\"},{\"ParameterKey\":\"NameServerInstanceType\",\"ParameterValue\":\"m5.large\"},{\"ParameterKey\":\"BrokerNodeInstanceType\",\"ParameterValue\":\"m5.xlarge\"},{\"ParameterKey\":\"NameServerClusterCount\",\"ParameterValue\":\"${NameServerClusterCount}\"},{\"ParameterKey\":\"RocketMQVersion\",\"ParameterValue\":\"${RocketMQVersion}\"}]" --capabilities CAPABILITY_NAMED_IAM
