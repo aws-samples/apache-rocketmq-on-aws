@@ -20,15 +20,15 @@ You can also use the AWS CloudFormation templates as a starting point for your o
 For architectural details, best practices, step-by-step instructions, and customization options, see the
 [deployment guide](https://www.amazonaws.cn/solutions/RocketMQ/).
 
-##How to use
+## How to use
 
-####Deploy Steps
+#### Deploy Steps
 1. clone this repo
 2. use  "aws configure" to setup the aws credential and region  
 3. go to scripts directory inside the local repo directory
 4. run "bash deploy.sh" and enter the parameters needed. it will trigger a cloudformation deploy to your aws account.
 
-####How to access Apache RocketMQ console
+#### How to access Apache RocketMQ console
 1. From AWS Console, get the bastion public address and username
 2. Set up a ssh tunnel to the bastion host, similar to this [guide](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-ssh-tunnel-local.html)
 3. From AWS Console, get the Name Server private  ip address, in browser, enter "NAME_SERVER_PRIVATE_IPADDRESS:8080" to access the console.
