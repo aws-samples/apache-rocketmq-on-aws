@@ -20,9 +20,28 @@ You can also use the AWS CloudFormation templates as a starting point for your o
 For architectural details, best practices, step-by-step instructions, and customization options, see the
 [deployment guide](https://www.amazonaws.cn/solutions/RocketMQ/).
 
-## How to use
+## Deploy via CloudFormation
 
-#### Deploy Steps
+
+**Time to deploy:** Approximately 15 minutes.
+
+Follow the step-by-step instructions in this section to configure and deploy the AWS Data Replication Hub into your account.
+
+1. Make sure you have sign in AWS Console already.
+1. Click the following button to launch the CloudFormation Stack in your account.
+   
+   | Region        | Type           | Launch Button  |
+   | ------------- |:-------------| -----:|
+   | Global Region      | Launch to new VPC |    [![Launch Stack](./launch-stack.png)](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template?stackName=rocketMQ&templateURL=https://aws-cn-quickstart.s3.cn-north-1.amazonaws.com.cn/quickstart-rocketmq/templates/rocketmq-master.template) |
+   | Global Region      | Launch to existing VPC |    [![Launch Stack](./launch-stack.png)](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template?stackName=rocketMQ&templateURL=https://aws-cn-quickstart.s3.cn-north-1.amazonaws.com.cn/quickstart-rocketmq/templates/rocketmq.template) |
+   | China Region      | Launch to new VPC |    [![Launch Stack](./launch-stack.png)](https://console.amazonaws.cn/cloudformation/home#/stacks/create/template?stackName=rocketMQ&templateURL=https://aws-cn-quickstart.s3.cn-north-1.amazonaws.com.cn/quickstart-rocketmq/templates/rocketmq-master.template) |
+   | China Region      | Launch to existing VPC |    [![Launch Stack](./launch-stack.png)](https://console.amazonaws.cn/cloudformation/home#/stacks/create/template?stackName=rocketMQ&templateURL=https://aws-cn-quickstart.s3.cn-north-1.amazonaws.com.cn/quickstart-rocketmq/templates/rocketmq.template) |
+   
+1. Update required cloudformation parameter, please refer to [deployment guide](https://s3.cn-north-1.amazonaws.com.cn/aws-dam-prod/china/Solutions/Apache_RocketMQ_on_AWS/apache_rocketmq_on_aws_deployment_guide.pdf)
+1. Click **Next** and select **Create Stack**.
+
+#### Manual Deploy Steps
+If you updated the code in this repo, you can use following steps to manually deploy updated templates and code to your own s3 bucket.
 1. clone this repo
 2. use  "aws configure" to setup the aws credential and region  
 3. go to scripts directory inside the local repo directory
