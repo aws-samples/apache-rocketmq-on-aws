@@ -364,46 +364,46 @@
                 "AMZNLINUX": "amzn2-ami-hvm-2.0.20201218.1-x86_64-gp2"
             },
             "ap-northeast-1": {
-                "AMZNLINUX": "ami-02ddf94e5edc8e904"
+                "AMZNLINUX": "ami-09d28faae2e9e7138"
             },
             "ap-northeast-2": {
-                "AMZNLINUX": "ami-0ecd78c22823e02ef"
+                "AMZNLINUX": "ami-006e2f9fa7597680a"
             },
             "ap-south-1": {
-                "AMZNLINUX": "ami-05695932c5299858a"
+                "AMZNLINUX": "ami-0eeb03e72075b9bcc"
             },
             "ap-southeast-1": {
-                "AMZNLINUX": "ami-043afc2b8b6cfba5c"
+                "AMZNLINUX": "ami-0d06583a13678c938"
             },
             "ap-southeast-2": {
-                "AMZNLINUX": "ami-01393ce9a3ca55d67"
+                "AMZNLINUX": "ami-0d06583a13678c938"
             },
             "ca-central-1": {
-                "AMZNLINUX": "ami-0fa94ecf2fef3420b"
+                "AMZNLINUX": "ami-0d06583a13678c938"
             },
             "eu-central-1": {
-                "AMZNLINUX": "ami-0ba441bdd9e494102"
+                "AMZNLINUX": "ami-02f9ea74050d6f812"
             },
             "eu-west-1": {
-                "AMZNLINUX": "ami-0e61341fa75fcaa18"
+                "AMZNLINUX": "ami-096f43ef67d75e998"
             },
             "eu-west-2": {
-                "AMZNLINUX": "ami-050b8344d77081f4b"
+                "AMZNLINUX": "ami-0ffd774e02309201f"
             },
             "sa-east-1": {
-                "AMZNLINUX": "ami-05b7dbc290217250d"
+                "AMZNLINUX": "ami-0a0bc0fa94d632c94"
             },
             "us-east-1": {
                 "AMZNLINUX": "ami-0be2609ba883822ec"
             },
             "us-east-2": {
-                "AMZNLINUX": "ami-0a0ad6b70e61be944"
+                "AMZNLINUX": "ami-09246ddb00c7c4fef"
             },
             "us-west-1": {
-                "AMZNLINUX": "ami-03130878b60947df3"
+                "AMZNLINUX": "ami-066c82dabe6dd7f73"
             },
             "us-west-2": {
-                "AMZNLINUX": "ami-0a36eb8fadc976275"
+                "AMZNLINUX": "ami-09c5e030f74651050"
             },
             "cn-north-1":{
                 "AMZNLINUX": "ami-0e73c8a64c3afcefa"
