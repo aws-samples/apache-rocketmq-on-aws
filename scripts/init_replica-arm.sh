@@ -132,7 +132,7 @@ getSuggestedJVM_xmn() {
 version=${RocketMQVersion}
 
 if [ -z "$version" ] ; then
-  version="4.7.1"
+  version="4.9.4"
 fi
 
 
