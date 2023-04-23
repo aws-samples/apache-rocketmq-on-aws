@@ -379,10 +379,10 @@
                 "AMZNLINUX": "ami-034af13a6cee1d143"
             },
             "cn-north-1":{
-                "AMZNLINUX": "ami-0e73c8a64c3afcefa"
+                "AMZNLINUX": "ami-009a1b4e02f9801cb"
             },
             "cn-northwest-1":{
-                "AMZNLINUX": "ami-0c6205ef045ce3916"
+                "AMZNLINUX": "ami-0789cd16f958e6404"
             }
         }
     },
