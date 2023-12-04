@@ -132,7 +132,7 @@
                 "4.9.2",
                 "4.9.4",
                 "5.0.0",
-                "5.1.4"
+                "5.1.1"
             ]
         },
         "ReplicaNodeWaitForNodeInstallWaitHandle": {
