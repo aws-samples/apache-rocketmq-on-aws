@@ -51,3 +51,5 @@ If you updated the code in this repo, you can use following steps to manually de
 1. From AWS Console, get the bastion public address and username
 2. Set up a ssh tunnel to the bastion host, similar to this [guide](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-ssh-tunnel-local.html)
 3. From AWS Console, get the Name Server private  ip address, in browser, enter "NAME_SERVER_PRIVATE_IPADDRESS:8080" to access the console.
+
+### Deploy via AWS CLI
