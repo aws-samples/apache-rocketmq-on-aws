@@ -136,25 +136,26 @@
                 "4.9.2",
                 "4.9.4",
                 "5.0.0",
+                "5.1.0",
                 "5.1.1"
             ]
         },
         "QSS3BucketName": {
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
-            "Default": "aws-cn-quickstart",
+            "Default": "rocketmq-test-us",
             "Type": "String",
             "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
             "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
         },
         "QSS3KeyPrefix": {
             "AllowedPattern": "^[0-9a-zA-Z-/]*$",
-            "Default": "quickstart-rocketmq/",
+            "Default": "rocketmq/",
             "Type": "String",
             "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
             "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start or end with a hyphen (-)."
         },
         "QSS3BucketRegion": {
-            "Default": "cn-north-1",
+            "Default": "us-east-1",
             "Description": "The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.",
             "Type": "String"
         },
@@ -170,11 +171,10 @@
         },
         "VolumeType": {
             "Type": "String",
-            "Description": "EBS Volume Type (data) to be attached to node in GBs [io1,gp2,gp3]",
-            "Default": "gp3",
+            "Description": "EBS Volume Type (data) to be attached to node in GBs [io1,gp2]",
+            "Default": "gp2",
             "AllowedValues": [
                 "gp2",
-                "gp3",
                 "io1"
             ]
         },
@@ -230,7 +230,7 @@
         "BrokerNodeInstanceType": {
             "Description": "Amazon EC2 instance type for the RocketMQ nodes.",
             "Type": "String",
-            "Default": "m5.2xlarge",
+            "Default": "m5.xlarge",
             "AllowedValues": [
                 "m5.large",
                 "m5.xlarge",
@@ -368,52 +368,49 @@
                 "AMZNLINUX": "amzn2-ami-hvm-2.0.20201218.1-x86_64-gp2"
             },
             "ap-northeast-1": {
-                "AMZNLINUX": "ami-02ddf94e5edc8e904"
+                "AMZNLINUX": "ami-09d28faae2e9e7138"
             },
             "ap-northeast-2": {
-                "AMZNLINUX": "ami-0ecd78c22823e02ef"
+                "AMZNLINUX": "ami-006e2f9fa7597680a"
             },
             "ap-south-1": {
-                "AMZNLINUX": "ami-05695932c5299858a"
+                "AMZNLINUX": "ami-0eeb03e72075b9bcc"
             },
             "ap-southeast-1": {
-                "AMZNLINUX": "ami-043afc2b8b6cfba5c"
+                "AMZNLINUX": "ami-0d06583a13678c938"
             },
             "ap-southeast-2": {
-                "AMZNLINUX": "ami-01393ce9a3ca55d67"
+                "AMZNLINUX": "ami-075a72b1992cb0687"
             },
             "ca-central-1": {
-                "AMZNLINUX": "ami-0fa94ecf2fef3420b"
+                "AMZNLINUX": "ami-0d06583a13678c938"
             },
             "eu-central-1": {
-                "AMZNLINUX": "ami-0ba441bdd9e494102"
+                "AMZNLINUX": "ami-0df612970f825f04c"
             },
             "eu-west-1": {
-                "AMZNLINUX": "ami-0e61341fa75fcaa18"
+                "AMZNLINUX": "ami-096f43ef67d75e998"
             },
             "eu-west-2": {
-                "AMZNLINUX": "ami-050b8344d77081f4b"
+                "AMZNLINUX": "ami-0ffd774e02309201f"
             },
             "sa-east-1": {
-                "AMZNLINUX": "ami-05b7dbc290217250d"
+                "AMZNLINUX": "ami-0a0bc0fa94d632c94"
             },
             "us-east-1": {
                 "AMZNLINUX": "ami-0be2609ba883822ec"
             },
             "us-east-2": {
-                "AMZNLINUX": "ami-0a0ad6b70e61be944"
+                "AMZNLINUX": "ami-09246ddb00c7c4fef"
             },
             "us-west-1": {
-                "AMZNLINUX": "ami-03130878b60947df3"
+                "AMZNLINUX": "ami-066c82dabe6dd7f73"
             },
             "us-west-2": {
-                "AMZNLINUX": "ami-0a36eb8fadc976275"
+                "AMZNLINUX": "ami-09c5e030f74651050"
             },
             "cn-north-1":{
                 "AMZNLINUX": "ami-0e73c8a64c3afcefa"
-            },
-            "cn-northwest-1":{
-                "AMZNLINUX": "ami-0c6205ef045ce3916"
             },
             "cn-northwest-1":{
                 "AMZNLINUX": "ami-0c6205ef045ce3916"
