@@ -230,7 +230,7 @@
         "BrokerNodeInstanceType": {
             "Description": "Amazon EC2 instance type for the RocketMQ nodes.",
             "Type": "String",
-            "Default": "m5.xlarge",
+            "Default": "m5.2xlarge",
             "AllowedValues": [
                 "m5.large",
                 "m5.xlarge",
@@ -414,6 +414,12 @@
             },
             "cn-northwest-1":{
                 "AMZNLINUX": "ami-0c6205ef045ce3916"
+            },
+            "cn-northwest-1":{
+                "AMZNLINUX": "ami-0c6205ef045ce3916"
+            },
+            "eu-west-3":{
+                "AMZNLINUX": "ami-04b7bf9494d21c5bb"
             }
         }
     },
