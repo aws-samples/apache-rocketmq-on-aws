@@ -130,7 +130,7 @@ getSuggestedJVM_xmn() {
 version=${RocketMQVersion}
 
 if [ -z "$version" ] ; then
-  version="4.7.1"
+  version="4.9.2"
 fi
 
 
@@ -190,52 +190,37 @@ check_primary() {
 #################################################################
 # Setup RocketMQ servers and config nodes
 #################################################################
-echo "start download the rocketmq release 4.7.1"
-if [ ${version} == "4.7.1" ]
+echo "start download the rocketmq release ${version}"
+wget https://archive.apache.org/dist/rocketmq/${version}/rocketmq-all-${version}-bin-release.zip
+if [[ $? -ne 0 ]]
 then
-  wget https://archive.apache.org/dist/rocketmq/4.7.1/rocketmq-all-4.7.1-bin-release.zip
-  if [[ $? -ne 0 ]]
-  then
-     echo "failed to download the rocketMQ from website"
-     exit 1
-  fi
-elif [ ${version} == "4.8.0" ]
-then
-  wget https://mirror.bit.edu.cn/apache/rocketmq/4.8.0/rocketmq-all-4.8.0-bin-release.zip
-  if [[ $? -ne 0 ]]
-  then
-   #Try another source
-   wget https://mirrors.tuna.tsinghua.edu.cn/apache/rocketmq/4.8.0/rocketmq-all-4.8.0-bin-release.zip
+   #Try another  source
+   wget https://aws-gcr-solutions.s3.amazonaws.com/rocketmq-releases/rocketmq-all-${version}-bin-release.zip
    if [[ $? -ne 0 ]]
    then
-     #Try another  source
-     wget https://mirrors.bfsu.edu.cn/apache/rocketmq/4.8.0/rocketmq-all-4.8.0-bin-release.zip
-     if [[ $? -ne 0 ]]
-     then
        echo "failed to download the rocketMQ from website"
        exit 1
-     fi
    fi
-  fi
 fi
 
+rocketFolderName=`zipinfo -1 ./rocketmq-all-${version}-bin-release.zip|head -n 1|awk -F/ '{print $1}'`
 
 unzip ./rocketmq-all-${version}-bin-release.zip
 
 sleep 5
 
 #Adding openJDK ext dirs to the ext dirs to fix mqadm failed issue: https://www.itapes.cn/archives/148
-sed -i 's/JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=.*$/JAVA_OPT=\"\${JAVA_OPT} -Djava.ext.dirs=\${BASE_DIR}\/lib:${JAVA_HOME}\/jre\/lib\/ext:${JAVA_HOME}\/lib\/ext:\/usr\/lib\/jvm\/jre-1.8.0-openjdk\/lib\/ext\"/gI' ./rocketmq-all-${version}-bin-release/bin/tools.sh
+sed -i 's/JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=.*$/JAVA_OPT=\"\${JAVA_OPT} -Djava.ext.dirs=\${BASE_DIR}\/lib:${JAVA_HOME}\/jre\/lib\/ext:${JAVA_HOME}\/lib\/ext:\/usr\/lib\/jvm\/jre-1.8.0-openjdk\/lib\/ext\"/gI' ./${rocketFolderName}/bin/tools.sh
 echo "java extension dirs are"
-echo `grep "-Djava.ext.dirs" ./rocketmq-all-${version}-bin-release/bin/tools.sh`
+echo `grep "-Djava.ext.dirs" ./${rocketFolderName}/bin/tools.sh`
 
 #Update the default jvm memory allocation
 #JAVA_OPT="${JAVA_OPT} -server -Xms8g -Xmx8g -Xmn4g"
 xms=`getSuggestedJVM_xms`
 xmn=`getSuggestedJVM_xmn`
-sed -i "s/-server -Xms4g -Xmx4g -Xmn2g.*$/-server -Xms${xms} -Xmx${xms} -Xmn${xmn}\"/gI" ./rocketmq-all-${version}-bin-release/bin/runserver.sh
+sed -i "s/-server -Xms4g -Xmx4g -Xmn2g.*$/-server -Xms${xms} -Xmx${xms} -Xmn${xmn}\"/gI" ./${rocketFolderName}/bin/runserver.sh
 echo "java jvm allocation are"
-echo `grep "-server -X" ./rocketmq-all-${version}-bin-release/bin/runserver.sh`
+echo `grep "-server -X" ./${rocketFolderName}/bin/runserver.sh`
 
 ################################################################
 # Start generating RocketMQ config file
@@ -246,7 +231,7 @@ NAMESERVER_PORT=9876
 ################################################################
 # Start to launch Name Server
 ################################################################
-nohup sh rocketmq-all-${version}-bin-release/bin/mqnamesrv &
+nohup sh ${rocketFolderName}/bin/mqnamesrv &
 
 # TBD - Add custom CloudWatch Metrics for RocketMQ
 if [[ "$NODE_TYPE" == "Primary" ]]; then
