@@ -122,12 +122,16 @@
             ]
         },
         "RocketMQVersion": {
-            "Default": "4.7.1",
+            "Default": "4.9.2",
             "Type": "String",
             "Description": "RocketMQ version",
             "AllowedValues": [
                 "4.7.1",
-                "4.8.0"
+                "4.8.0",
+                "4.9.2",
+                "4.9.4",
+                "5.0.0",
+                "5.1.4"
             ]
         },
         "ReplicaNodeWaitForNodeInstallWaitHandle": {
